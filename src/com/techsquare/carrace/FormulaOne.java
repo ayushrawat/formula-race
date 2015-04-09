@@ -91,13 +91,15 @@ class FormulaOne {
 	}
 	
 	class Race{
-		List<Car> cars;
+		List<Car> cars, finishedCars;
 		int totalDistance;
 		
-		public Race(int totalDistance, int numberOfCars) throws Exception
+		public Race(int totalDist, int numberOfCars) throws Exception
 		{
 			if(numberOfCars > 0)
 			{
+				//initializing the cars
+				finishedCars = new ArrayList<Car>();
 				cars = new ArrayList<Car>();
 				Car car;
 				for(int i=1; i<=numberOfCars; i++)
@@ -109,6 +111,31 @@ class FormulaOne {
 			else
 				throw new Exception("No Cars to Race!");
 			
+			if (totalDist >= 0)
+			{
+				//adding the initial heads up to the distance to compensate
+				totalDistance = totalDist + 200*(numberOfCars - 1); 
+				//let the race begin!
+				beginRace();
+			}
+			else
+				throw new Exception("Race Distance cannot be Negative!");
+		}
+
+		void beginRace() {
+			
+			//till the cars are in race
+			while(cars.size() > 0)
+			{
+				//for each car
+				for(Car currentCar: cars)
+				{
+					//check if race finished? yes, take steps
+					//check if any other car is around the current car? yes, take steps
+					//check if the last one? yes, take steps
+					//move the car ahead
+				}
+			}
 			
 		}
 	}
@@ -117,7 +144,6 @@ class FormulaOne {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 
 	}
 
