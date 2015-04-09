@@ -4,7 +4,9 @@
 package com.techsquare.carrace;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * @author rawat
@@ -14,13 +16,12 @@ class FormulaOne {
 	
 	//Object to handle the Car and its driver
 	class Car{
-		int topSpeed;
-		float currentSpeed;
-		int acceleration;
-		float handlingFactor = 0.8f;
-		int initialHeadsUp;
-		float currentDistance;
-		int timeTaken;
+		private int topSpeed;
+		private float currentSpeed;
+		private int acceleration;
+		private float handlingFactor = 0.8f;
+		private float currentDistance;
+		private int timeTaken;
 		
 		public Car(int totalCars, int i)
 		{
@@ -39,13 +40,13 @@ class FormulaOne {
 			 * And the Total distance for ith car would be
 			 * 200*(n-i) + Given distance in meters
 			 */
-			//initializing current distance as the initial Heads up
-			currentDistance = initialHeadsUp = 200*(totalCars - i);
+			//initializing current distance
+			currentDistance = 200*(totalCars - i);
 			//initializing time taken to 0
 			timeTaken = 0;
 		}
 		
-		void moveTwoSeconds()
+		private void moveTwoSeconds()
 		{
 			//s = ut + 1/2at^2
 			float distanceTravelledInLast2Sec = ((float)currentSpeed*2) + ((float)(acceleration*4)/2);
@@ -58,7 +59,7 @@ class FormulaOne {
 			timeTaken += 2;
 		}
 		
-		float getCurrentDistanceFromEndPoint(int totalDistance)
+		private float getCurrentDistanceFromEndPoint(int totalDistance)
 		{
 			//return 0 in case where the Race ended for Current car
 			float currentDist = (float)totalDistance - currentDistance;
@@ -68,31 +69,31 @@ class FormulaOne {
 				return currentDist;
 		}
 		
-		void applyNitro()
+		private void applyNitro()
 		{
 			//Whichever is less is made the Current Speed
 			currentSpeed = Math.min((currentSpeed*2), topSpeed);
 		}
 		
-		void reduceSpeedByHF()
+		private void reduceSpeedByHF()
 		{
 			currentSpeed *= handlingFactor;
 		}
 		
-		float getCurrentSpeed()
+		private float getCurrentSpeed()
 		{
 			return currentSpeed;
 		}
 		
-		int getTimeTaken()
+		private int getTimeTaken()
 		{
 			return timeTaken;
 		}
 	}
 	
 	class Race{
-		List<Car> cars, finishedCars;
-		int totalDistance;
+		private List<Car> cars, finishedCars;
+		private int totalDistance;
 		
 		public Race(int totalDist, int numberOfCars) throws Exception
 		{
@@ -106,6 +107,7 @@ class FormulaOne {
 				{
 					car = new Car(numberOfCars, i);
 					cars.add(car);
+					System.out.println("Cars Initialized...");
 				}
 			}
 			else
@@ -114,29 +116,73 @@ class FormulaOne {
 			if (totalDist >= 0)
 			{
 				//adding the initial heads up to the distance to compensate
-				totalDistance = totalDist + 200*(numberOfCars - 1); 
-				//let the race begin!
-				beginRace();
+				totalDistance = totalDist + 200*(numberOfCars - 1);
 			}
 			else
 				throw new Exception("Race Distance cannot be Negative!");
 		}
-
-		void beginRace() {
-			
+		
+		public List<Car> getFinalCars()
+		{
+			return this.finishedCars;
+		}
+		
+		public void beginRace() {
+			System.out.println("Starting Race...");
 			//till the cars are in race
 			while(cars.size() > 0)
 			{
+				float dist;
+				Car currentCar;
 				//for each car
-				for(Car currentCar: cars)
+				Iterator<Car> it = cars.iterator();
+				while(it.hasNext())
 				{
+					currentCar = it.next();
 					//check if race finished? yes, take steps
+					dist = currentCar.getCurrentDistanceFromEndPoint(totalDistance);
+					if(dist == 0)
+					{
+						finishedCars.add(currentCar);
+						it.remove();
+						continue;
+					}
 					//check if any other car is around the current car? yes, take steps
+					checkIfGivenCarIsAroundAnyOtherCarAndIfYesReduceSpeed(currentCar, dist);
 					//check if the last one? yes, take steps
-					//move the car ahead
+					checkIfGivenCarIsTheLastOneAndIfYesApplyNitro(currentCar, dist);
 				}
+				//move each two seconds ahead
+				for(Car car:cars)
+					car.moveTwoSeconds();
+			}
+			System.out.println();
+		}
+
+		private void checkIfGivenCarIsTheLastOneAndIfYesApplyNitro(Car currentCar, float dist) {
+			
+			boolean maxTillNow = true;
+			
+			for(Car car:cars)
+			{
+				if( dist >= car.getCurrentDistanceFromEndPoint(totalDistance))
+					continue;
+				maxTillNow = false;
 			}
 			
+			if(maxTillNow)
+				currentCar.applyNitro();
+		}
+
+		private void checkIfGivenCarIsAroundAnyOtherCarAndIfYesReduceSpeed(Car currentCar, float distance) {
+			for(Car car:cars)
+			{
+				if(Math.abs(distance - car.getCurrentDistanceFromEndPoint(totalDistance)) <= 10 )
+				{
+					currentCar.reduceSpeedByHF();
+					break;
+				}
+			}
 		}
 	}
 	
@@ -144,7 +190,43 @@ class FormulaOne {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-
+		// take input for number of cars and race distance
+		int totalCars = 0;
+		int totalDistance = 0;
+		String kmOrm = "";
+		Scanner input = new Scanner(System.in);
+		System.out.println("Enter Total Number of Cars");
+		totalCars = Integer.parseInt(input.next());
+		System.out.println("Enter Total Distance for the Race");
+		totalDistance = Integer.parseInt(input.next());
+		System.out.println("Enter Distance unit (Car's end Speed will be returned according to what you enter!): M for Meters, KM for Kilometers");
+		kmOrm = input.next();
+		if(kmOrm.equalsIgnoreCase("KM"))
+			totalDistance *= 1000;
+		input.close();
+		try {
+			FormulaOne f1 = new FormulaOne();
+			Race formula1 = f1.new Race(totalDistance, totalCars);
+			formula1.beginRace();
+			List<Car> finalCars = formula1.getFinalCars();
+			for(Car car:finalCars)
+			{
+				
+				if(kmOrm.equalsIgnoreCase("KM"))
+				{
+					System.out.println("Completion Time for Car " + (finalCars.indexOf(car)+1) + " is: " + ((car.getTimeTaken()/60)/60) + " hours.");
+					System.out.println("Completion Speed for Car " + (finalCars.indexOf(car)+1) + " is: " + (car.getCurrentSpeed()*(3.6)) + " Km/H.");
+				}
+				else
+				{
+					System.out.println("Completion Time for Car " + (finalCars.indexOf(car)+1) + " is: " + car.getTimeTaken() + " seconds.");
+					System.out.println("Completion Speed for Car " + (finalCars.indexOf(car)+1) + " is: " + car.getCurrentSpeed() + " Meter/Sec.");
+				}
+			}
+		} catch (Exception e) {
+			System.out.println("xxxxxx!!!xxxx "+e.getMessage()+" xxxxxx!!!xxxxx");
+		}
+		// give output for each car
 	}
 
 }
