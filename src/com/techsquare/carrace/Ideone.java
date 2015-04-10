@@ -3,10 +3,7 @@
  */
 package com.techsquare.carrace;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * @author rawat
@@ -255,7 +252,7 @@ class Ideone {
 		private void checkIfGivenCarIsTheLastOneAndIfYesApplyNitro(Car currentCar, float dist, boolean best) {
 
 			boolean maxTillNow = true;
-
+			//if the current car is behind all, apply nitro
 			for(Car car:cars)
 			{
 				if(car.id == currentCar.id)
@@ -287,50 +284,76 @@ class Ideone {
 		}
 	}
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
+		
 		// take input for number of cars and race distance
+		
 		int totalCars = 0;
 		int totalDistance = 0;
 		String kmOrm = "";
 		String yesNo = "";
+		
 		Scanner input = new Scanner(System.in);
+		
+		
 		System.out.println("Enter Total Number of Cars");
 		totalCars = Integer.parseInt(input.next());
+
+		
 		System.out.println("Enter Total Distance for the Race");
 		totalDistance = Integer.parseInt(input.next());
+
+		
 		System.out.println("Enter Distance unit (Car's end Speed will be returned according to what you enter!): M for Meters, KM for Kilometers");
 		kmOrm = input.next();
 		if(kmOrm.equalsIgnoreCase("KM"))
 			totalDistance *= 1000;
-		System.out.println("(Additional) Would you like the cars to use nitro only when their speed/distance is optimal? 1 for yes, 0 for no:");
+
+		
+		System.out.println("(Additional) Would you like the cars to use nitro only when their speed/distance is optimal to use nitro? 1 for yes, 0 for no:");
 		yesNo = input.next();
+		
 		input.close();
+		
+		
 		try {
 			Ideone f1 = new Ideone();
 			Race formula1 = f1.new Race(totalDistance, totalCars);
+		
+			//starting the race!
 			formula1.beginRace(yesNo.equalsIgnoreCase("1"));
+			
+			//gathering results
 			List<Car> finalCars = formula1.getFinalCars();
 			System.out.println("!!!!!RESULTS!!!!!");
+			
 			// give output for each car
 			for(Car car:finalCars)
 			{
-
+				//rounding the speed up to two decimal places
 				if(kmOrm.equalsIgnoreCase("KM"))
 				{
-					System.out.println("Completion Time for Car " + car.id + " is: " + ((car.getTimeTaken()/60)/60) + " hours.");
-					System.out.println("Completion Speed for Car " + car.id + " is: " + (car.getCurrentSpeed()*(3.6)) + " Km/H.");
+				
+					String timeTaken = (car.getTimeTaken()/3600) + " hours, " + ((car.getTimeTaken()/60)%60) + " minutes, " + (car.getTimeTaken()%60) + " seconds.";
+					
+					System.out.println("Completion Time for Car " + car.id + " is: " + timeTaken);
+					
+					System.out.println("Completion Speed for Car " + car.id + " is: " + (Math.round(car.getCurrentSpeed()*360.0))/100.0 + " Km/H.");
 				}
 				else
 				{
+					
 					System.out.println("Completion Time for Car " + car.id + " is: " + car.getTimeTaken() + " seconds.");
-					System.out.println("Completion Speed for Car " + car.id + " is: " + car.getCurrentSpeed() + " Meter/Sec.");
+					
+					System.out.println("Completion Speed for Car " + car.id + " is: " + (Math.round(car.getCurrentSpeed()*100.0))/100.0 + " Meter/Sec.");
+				
 				}
 			}
+		
 		} catch (Exception e) {
-			System.out.println("xxxxxx!!!xxxx "+e.getMessage()+" xxxxxx!!!xxxxx");
+		
+			System.out.println("ERROR: xxxxxx!!!xxxx "+e.getMessage()+" xxxxxx!!!xxxxx");
+		
 		}
 	}
 
